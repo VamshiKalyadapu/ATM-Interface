@@ -23,9 +23,14 @@ class User {
         return accountBalance;
     }
 
+    public void setAccountBalance(double newBalance) {
+        this.accountBalance = newBalance;
+    }
+
     // Method to check balance
     public void checkBalance() {
         System.out.println("Your current balance: " + accountBalance);
     }
+
 
 }
