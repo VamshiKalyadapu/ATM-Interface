@@ -23,6 +23,7 @@ class User {
         return accountBalance;
     }
 
+    //Setting the account balance with new Balance
     public void setAccountBalance(double newBalance) {
         this.accountBalance = newBalance;
     }
