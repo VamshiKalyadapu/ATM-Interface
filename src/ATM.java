@@ -1,27 +1,23 @@
 import java.util.Scanner;
 
 public class ATM {
-
+    private User[] users;
     private User currentUser;
     private Scanner scanner;
 
     // Constructor
-    public ATM(User currentUser) {
-        this.currentUser = currentUser;
+    public ATM() {
         this.scanner = new Scanner(System.in);
     }
 
     // Main method to run ATM operations
     public void run() {
-        authenticateUser();
+        addAccounts();
+        authenticateUser(); // initialize currentUser
 
         int choice;
         do {
-            System.out.println("\nChoose an operation:");
-            System.out.println("1. Check Balance");
-            System.out.println("2. Withdraw Money");
-            System.out.println("3. Deposit Money");
-            System.out.println("4. Exit");
+            displayMenu();
 
             System.out.print("Enter your choice: ");
             choice = scanner.nextInt();
@@ -37,39 +33,71 @@ public class ATM {
                     depositMoney();
                     break;
                 case 4:
+                    if (currentUser == users[0]) {
+                        System.out.println("You have added only one account");
+                        System.exit(0);
+                    } else {
+                        switchAccount();
+                        break;
+                    }
+                case 5:
                     System.out.println("Exiting...");
                     break;
                 default:
                     System.out.println("Invalid choice. Please try again...");
             }
-        } while (choice != 4);
+        } while (choice != 5);
     }
 
-    private void authenticateUser() {
+    private void displayMenu() {
+        System.out.println("\nChoose an operation:");
+        System.out.println("1. Check Balance");
+        System.out.println("2. Withdraw Money");
+        System.out.println("3. Deposit Money");
+        System.out.println("4. Switch Account");
+        System.out.println("5. Exit");
+    }
+
+    // Accounts
+    private void addAccounts() {
         System.out.println("Welcome to the ATM!");
+        System.out.print("\nEnter how many accounts do you want to add: ");
+        int count = scanner.nextInt();
+        users = new User[count];
 
-        // Prompt users to enter user ID and PIN
-        System.out.print("Enter user ID: ");
-        String enteredUserId = scanner.next();
-        System.out.print("Enter user PIN: ");
-        String enteredPIN = scanner.next();
-
-        // Validate entered credentials against stored user data
-        if (currentUser.getUserId().equals(enteredUserId) && currentUser.getUserPIN().equals(enteredPIN)) {
-            System.out.println("Authentication successful!");
-        } else {
-            System.out.println("Entered invalid userID or userPIN. Exiting...");
-            System.exit(0);
+        for (int i = 0; i < count; i++) {
+            System.out.println("\nEnter details for Account " + (i + 1) + ":");
+            addUserAccount(i);
         }
     }
 
+    // adding user accounts
+    private void addUserAccount(int index) {
+        System.out.print("Enter user ID: ");
+        String userId = scanner.next();
+        System.out.print("Enter user PIN: ");
+        String userPIN = scanner.next();
+        System.out.print("Enter initial account balance: ");
+        double initialBalance = scanner.nextDouble();
+
+        users[index] = new User(userId, userPIN, initialBalance);
+        System.out.println("Account" + (index + 1) + " added successfully");
+
+        if (index == 0) {
+            currentUser = users[0]; // Set currentUser after creating the first account
+        } else {
+            authenticateUser();
+        }
+    }
+
+    // Withdraw money
     private void withdrawMoney() {
         System.out.print("Enter the amount to withdraw: ");
 
         // Prompt users to withdraw amount
         double amount = scanner.nextDouble();
 
-        //checking the entered balance is not more than the current balance
+        // checking the entered balance is not more than the current balance
         if (amount > 0 && amount <= currentUser.getAccountBalance()) {
             double newBalance = currentUser.getAccountBalance() - amount;
             currentUser.setAccountBalance(newBalance);
@@ -81,6 +109,7 @@ public class ATM {
         }
     }
 
+    // Depositing money
     private void depositMoney() {
         System.out.print("Enter the amount to deposit: ");
 
@@ -94,6 +123,53 @@ public class ATM {
         } else {
             System.out.println("\nInvalid amount.");
             System.out.println("Enter the valid amount to deposit...\n");
+        }
+    }
+
+    private void authenticateUser() {
+
+        System.out.println("\nDo you want to stay in the current account or switch to another account");
+        System.out.println("Yes or No?");
+        String str = scanner.next();
+        if (String.valueOf(str.charAt(0)).equalsIgnoreCase("y")) {
+            return;
+        } else if (String.valueOf(str.charAt(0)).equalsIgnoreCase("n")) {
+            switchAccount();
+        } else if (currentUser == users[0]) {
+            System.out.println("You have added only one account");
+        } else {
+            System.out.println("Invalid input...");
+            authenticateUser(); // Prompt again if the input is invalid
+            return;
+        }
+
+        // currentUser is not null before continuing
+        if (currentUser == null) {
+            System.out.println("Error: currentUser is null.");
+            System.exit(1);
+        }
+
+    }
+
+    private void switchAccount() {
+        System.out.print("Enter the user ID of the account you want to switch to: ");
+        String searchUserId = scanner.next();
+        System.out.print("Enter the PIN of the account: ");
+        String searchUserPIN = scanner.next();
+
+        boolean accountFound = false;
+        for (User user : users) {
+            if (user != null && user.getUserId().equals(searchUserId) && user.getUserPIN().equals(searchUserPIN)) {
+                user.displayDetails();
+                currentUser = user;
+                System.out.println("Now you are in " + currentUser.getUserId() + "'s Account");
+                accountFound = true;
+                break;
+            }
+        }
+
+        if (!accountFound) {
+            System.out.println("Account not found or invalid credentials.");
         }
     }
 

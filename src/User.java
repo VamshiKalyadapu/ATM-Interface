@@ -5,9 +5,9 @@ class User {
 
     // Constructor
     public User(String userId, String userPIN, double accountBalance) {
-        this.userId = userId;
-        this.userPIN = userPIN;
-        this.accountBalance = accountBalance;
+       this.userId = userId;
+       this.userPIN = userPIN;
+       this.accountBalance = accountBalance;
     }
 
     // Getter methods
@@ -26,6 +26,13 @@ class User {
     //Setting the account balance with new Balance
     public void setAccountBalance(double newBalance) {
         this.accountBalance = newBalance;
+    }
+
+    //Display details
+    public void displayDetails() {
+        System.out.println("User ID: " + userId);
+        System.out.println("User PIN: " + userPIN);
+        System.out.println("Account Balance: $" + accountBalance);
     }
 
     // Method to check balance
