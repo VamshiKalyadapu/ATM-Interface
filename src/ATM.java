@@ -13,7 +13,6 @@ public class ATM {
     // Main method to run ATM operations
     public void run() {
         addAccounts();
-        authenticateUser(); // initialize currentUser
 
         int choice;
         do {
@@ -33,13 +32,8 @@ public class ATM {
                     depositMoney();
                     break;
                 case 4:
-                    if (currentUser == users[0]) {
-                        System.out.println("You have added only one account");
-                        System.exit(0);
-                    } else {
-                        switchAccount();
-                        break;
-                    }
+                    switchAccount();
+                    break;
                 case 5:
                     System.out.println("Exiting...");
                     break;
@@ -63,11 +57,17 @@ public class ATM {
         System.out.println("Welcome to the ATM!");
         System.out.print("\nEnter how many accounts do you want to add: ");
         int count = scanner.nextInt();
+        scanner.nextLine();
         users = new User[count];
 
         for (int i = 0; i < count; i++) {
             System.out.println("\nEnter details for Account " + (i + 1) + ":");
             addUserAccount(i);
+        }
+
+        // Check if more than one account is added before calling authenticateUser()
+        if (count > 1) {
+            authenticateUser();
         }
     }
 
@@ -80,13 +80,32 @@ public class ATM {
         System.out.print("Enter initial account balance: ");
         double initialBalance = scanner.nextDouble();
 
+        // Consume the newline character
+        scanner.nextLine();
+
         users[index] = new User(userId, userPIN, initialBalance);
         System.out.println("Account" + (index + 1) + " added successfully");
 
-        if (index == 0) {
-            currentUser = users[0]; // Set currentUser after creating the first account
+    }
+
+    private void authenticateUser() {
+
+        System.out.println("\nDo you want to stay in the current account(Yes/No)");
+        String str = scanner.next();
+        if (str.equalsIgnoreCase("yes") || str.equalsIgnoreCase("y")) {
+            return;
+        } else if (str.equalsIgnoreCase("no") || str.equalsIgnoreCase("n")) {
+            switchAccount();
         } else {
-            authenticateUser();
+            System.out.println("Invalid input...");
+            authenticateUser(); // Prompt again if the input is invalid
+            return;
+        }
+
+        // currentUser is not null before continuing
+        if (currentUser == null) {
+            System.out.println("Error: currentUser is null.");
+            System.exit(1);
         }
     }
 
@@ -126,32 +145,16 @@ public class ATM {
         }
     }
 
-    private void authenticateUser() {
-
-        System.out.println("\nDo you want to stay in the current account or switch to another account");
-        System.out.println("Yes or No?");
-        String str = scanner.next();
-        if (String.valueOf(str.charAt(0)).equalsIgnoreCase("y")) {
-            return;
-        } else if (String.valueOf(str.charAt(0)).equalsIgnoreCase("n")) {
-            switchAccount();
-        } else if (currentUser == users[0]) {
-            System.out.println("You have added only one account");
-        } else {
-            System.out.println("Invalid input...");
-            authenticateUser(); // Prompt again if the input is invalid
-            return;
-        }
-
-        // currentUser is not null before continuing
-        if (currentUser == null) {
-            System.out.println("Error: currentUser is null.");
-            System.exit(1);
-        }
-
-    }
-
+    // Switching between accounts
     private void switchAccount() {
+        if (users.length == 1) {
+            currentUser = users[0];
+            System.out.println("\nYou have added only one account");
+            users[0].displayDetails();
+            System.out.println("Now you are in " + users[0].getUserId() + "'s Account");
+            return;
+        }
+
         System.out.print("Enter the user ID of the account you want to switch to: ");
         String searchUserId = scanner.next();
         System.out.print("Enter the PIN of the account: ");
@@ -159,7 +162,9 @@ public class ATM {
 
         boolean accountFound = false;
         for (User user : users) {
+            // checking user details are correct or not
             if (user != null && user.getUserId().equals(searchUserId) && user.getUserPIN().equals(searchUserPIN)) {
+                System.out.println("\nswitched user account details:");
                 user.displayDetails();
                 currentUser = user;
                 System.out.println("Now you are in " + currentUser.getUserId() + "'s Account");
